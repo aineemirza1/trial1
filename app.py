@@ -12,6 +12,11 @@ STATUS_ERROR = "error"
 def gui():
     return json_response(status="success", data="Hello GUI")
 
+@app.route('/in')
+def ind():
+    return render_template('app.html')
+   
+
 
 @app.route('/index', methods=['POST'])
 def index():
