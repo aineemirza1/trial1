@@ -1,0 +1,96 @@
+h1 {
+	color:white;	
+	font-family: 'Open Sans Condensed', sans-serif !important;
+	font-size: 32px;
+}
+h2 {
+	color:white;
+	font-family: 'Open Sans Condensed', sans-serif !important;
+	font-size: 20px !important;
+}
+
+p {
+	color:white;
+	font-family: 'Open Sans Condensed', sans-serif !important;
+	font-size: 15px !important;
+}
+
+.navbar{
+	background-color:#DA6740;
+	margin-bottom: 0px;
+	border-radius: 0px;
+	
+}
+.nav>li>a:focus, .nav>li>a:hover {
+    text-decoration: none;
+    background-color: transparent;
+	color: green ;
+}
+
+
+.btn{
+	    background-color: transparent;
+}
+.row{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+a {
+    color:white !important;
+    text-decoration: none;
+}
+
+li a:hover{
+    background: transparent !important;
+    color: green !important;
+	display: block!important;
+}
+.navbar-toggle .icon-bar {
+    background-color: white;
+}
+footer.footer {
+	
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+	height: 10%;
+    background-color:#DA6740;
+    color: white;
+	 display: flex;
+	align-items: center;
+	justify-content: center;
+}
+ body{
+	/* background-color:black; */
+	background-image: url(../static/bg.png);
+
+ }
+
+.container {
+     padding-right: 0px;
+    padding-left: 0px;
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
+select {
+    border-radius: 14px !important;
+    background-color:#DA6740 !important;
+    border-color:#DA6740 !important;
+    color:white !important;
+    margin-top: 20px !important;
+    margin-bottom: 15px !important;
+
+}
+}
+option{
+    border-radius: 14px !important;
+    background-color:#DA6740 !important;
+    border-color:#DA6740 !important;
+    color:white !important;
+    margin-top: 20px !important;
+    margin-bottom: 10px !important;
+}
+
