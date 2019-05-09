@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Translator Esan</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+  <script type="text/javascript">
+
+$(document).ready(function(e){
+  if (localStorage.login=="login") {
+    document.getElementById("header").children[5].style.display = "none"
+  }
+  else{
+   document.getElementById("header").children[6].style.display = "none"
+  }
+
+  $("#translate").click(function(e){
+    e.preventDefault();
+    get_translation(e);
+  });
+
+  $("#toggle").click(function(e){
+    e.preventDefault();
+    toggle(e);
+  });
+
+  $("#save").click(function(e){
+    e.preventDefault();
+    save_translation(e);
+  });
+ });
+
+function log_out(){
+  localStorage.clear("login");
+  localStorage.clear("email_id");
+  window.location.reload();
+}
+
+function get_translation(e)
+{
+    var textbox1 = document.getElementById('textbox1').value;
+    var dropdown = document.getElementById('dropdown').value;
+    var formData = new FormData();
+    formData.append("textbox1", textbox1);
+    formData.append("dropdown", dropdown);
+    e.preventDefault();
+    $.ajax
+    ({
+        url: "http://127.0.0.1:5000/translate",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function(result)
+        {
+            if (result.status == "failed")
+            {
+                document.getElementById("error").innerHTML = result.error;
+            }
+            else if (result.status == "success")
+            {
+                document.getElementById("error").innerHTML = "";
+                document.getElementById("textbox2").value = result.output;
+                disable_mic(dropdown);
+                save_history();
+                enable_save();
+            }
+        },
+        error: function()
+        {
+          alert("fail");
+        }
+    });
+ }
+
+ function toggle(e)
+{
+    var textbox2 = document.getElementById('textbox2').value;
+    var dropdown = document.getElementById('dropdown').value;
+    var formData = new FormData();
+    formData.append("textbox2", textbox2);
+    formData.append("dropdown", dropdown);
+    e.preventDefault();
+    $.ajax
+    ({
+        url: "http://127.0.0.1:5000/toggle",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function(result)
+        {
+            if (result.status == "failed")
+            {
+                document.getElementById("error").innerHTML = result.error;
+            }
+            else if (result.status== "success")
+            {
+                document.getElementById("error").innerHTML = "";
+                document.getElementById("textbox2").value = result.output;
+                document.getElementById("textbox1").value = result.input;
+                document.getElementById("dropdown").value = result.t_lang;
+                save_history();
+                enable_save();
+                if(result.input !=""){
+                    disable_mic(result.t_lang);
+                }
+            }
+        },
+        error: function()
+        {
+          alert("fail");
+        }
+    });
+ }
+
+function enable_save(){
+  var textbox1 = document.getElementById('textbox1').value;
+  var textbox2 = document.getElementById('textbox2').value;
+  var dropdown = document.getElementById('dropdown').value;
+  if(textbox1!='' && textbox2 !="" && dropdown!="" ){
+    $('#save').css('visibility','visible');
+  }else{
+    $('#save').css('visibility','hidden');
+  }
+}
+function disable_save(){
+    $('#save').css('visibility','hidden');
+}
+
+function save_history(){
+  var textbox1 = document.getElementById('textbox1').value;
+  var textbox2 = document.getElementById('textbox2').value;
+  var dropdown = document.getElementById('dropdown').value;
+  var formData = new FormData();
+  data= textbox1+"#"+textbox2+"#"+dropdown;
+  formData.append("email_id",  localStorage.email_id);
+  formData.append("new_data", data);
+  $.ajax({
+    url: "http://127.0.0.1:5000/update_history",
+    type: "POST",
+    data: formData,
+    contentType: false,
+    cache: false,
+    processData: false,
+    success: function(result){
+    if (result.status == "failed"){
+        document.getElementById("error").innerHTML = result.error;
+        }
+    },
+    error: function(){
+        alert("fail");
+    }
+  });
+}
+
+function view_history(){
+    if(localStorage.login=='login'){
+        var formData = new FormData();
+        formData.append("email_id",  localStorage.email_id);
+        $.ajax({
+            url: "http://127.0.0.1:5000/view_history",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            cache: false,
+            processData: false,
+            success: function(result){
+            if (result.status == "failed"){
+                document.getElementById("error").innerHTML = result.error;
+             }
+             else if (result.status== "success"){
+                var link="History";
+                var history = result.history;
+                if(history!="null"){
+                  var history_array = history.split("/");
+                  for (i = 0; i < history_array.length; i++) {
+                      var index = history_array[i].split("#");
+                      var input = index[0];
+                      var output = index[1];
+                      var dropdown = index[2];
+                      var str= "input";
+<!--                      var URL = "javascript:show_data(var str= 'ip')";-->
+                          var URL = "#";
+                      link=link+"</br>"+tr.link(URL);
+                      }
+                }
+                document.getElementById("history").innerHTML =  link;
+               }
+            },
+            error: function()
+            {
+              alert("fail to view history");
+            }
+        });
+     }
+    else{
+        document.getElementById("error").innerHTML = "Please Sign in";
+    }
+  }
+
+function save_translation(e){
+ if(localStorage.login=='login'){
+       var textbox1 = document.getElementById('textbox1').value;
+       var textbox2 = document.getElementById('textbox2').value;
+       var dropdown = document.getElementById('dropdown').value;
+       if(textbox1!='' && textbox2 !="" && dropdown!="" ){
+<!--       alert(textbox1);-->
+          var new_data=textbox1+"#"+textbox2+"#"+dropdown;
+          var formData = new FormData();
+          formData.append("email_id",  localStorage.email_id);
+          formData.append("new_data", new_data);
+          e.preventDefault();
+          $.ajax
+          ({
+              url: "http://127.0.0.1:5000/update_saved",
+              type: "POST",
+              data: formData,
+              contentType: false,
+              cache: false,
+              processData: false,
+              success: function(result)
+              {
+                  if (result.status == "failed")
+                  {
+                      document.getElementById("error").innerHTML = result.error;
+                  }
+                  else if (result.status == "success")
+                  {
+                      document.getElementById("error").innerHTML = "";
+<!--                      alert("sucess");-->
+                  }
+              },
+              error: function()
+              {
+                alert("fail");
+              }
+          });
+       }
+    }
+    else{
+      document.getElementById("error").innerHTML = "Please Log in to save data";
+    }
+  }
+
+function show_data(data){
+    alert(data);
+    var textbox1="input";
+    var textbox2="output";
+    var dropdown="tlang";
+    document.getElementById('textbox1').value = textbox1;
+    document.getElementById('textbox2').value = textbox2;
+    document.getElementById('dropdown').value = dropdown;
+}
+
+function view_translation(){
+if(localStorage.login=='login'){
+    var formData = new FormData();
+    formData.append("email_id",  localStorage.email_id);
+    $.ajax({
+        url: "http://127.0.0.1:5000/get_saved",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function(result)
+        {
+            if (result.status == "failed")
+            {
+                document.getElementById("error").innerHTML = result.error;
+            }
+            else if (result.status == "success")
+            {
+                var link="Saved";
+                var saved = result.saved;
+                if(saved!="null"){
+                  var saved_array = saved.split("/");
+                  for (i = 0; i < saved_array.length; i++) {
+                      var index = saved_array[i].split("#");
+                      var input = index[0];
+                      var output = index[1];
+                      var dropdown = index[2];
+                      var string= "input";
+                      var URL = "#";
+                      link=link+"</br>"+string.link(URL);
+                      }
+                }
+                document.getElementById("history").innerHTML =  link;
+            }
+        },
+        error: function()
+        {
+          alert("fail to view saved data");
+        }
+    });
+    }
+    else{
+        document.getElementById("error").innerHTML = "Please Sign in";
+    }
+   }
+
+
+</script>
+
+
+
+<script>
+  var arr = [
+  "Eke egogo aya",
+  "Bọdiayẹ?",
+  "B'átí ẹ?",
+  "Be khọna?",
+  "H’ee",
+  "H’eye",
+  "Idọkituh imẹ khin",
+  "Ọ bhọ wẹ khin?",
+  "Ọkínbué",
+  "Osas ki bho?" ];
+
+
+  function textToSpeech_esan(){
+    var test = document.getElementById("textbox2").value;
+    var output="";
+    for( i=0 ; i < arr.length ; i++){
+      if(arr[i] == test ){
+        i=i+1;
+        output= "/static/voice_data/"+i+".wav";
+        break;
+      }
+    }
+    if(output !== ""){
+     var x = document.getElementById("esan_audio_1");
+     x.src=output;
+     x.play();
+   }
+ }
+
+ function textToSpeech_eng(x){
+  var test = document.getElementById(x).value;
+  var msg = new SpeechSynthesisUtterance(test);
+  window.speechSynthesis.speak(msg);
+}
+
+function temporary(){
+  alert("jhgf");
+  var x = document.getElementById("esan_audio_1");
+  x.play();
+}
+
+function copy(x) {
+  var copyText = document.getElementById(x);
+  copyText.select();
+  document.execCommand("copy");
+}
+function setEditAble(x){
+  document.getElementById(x).value="";
+  if(x=="textbox1"){
+
+    $('#mic1').css('visibility','hidden');
+  }else if (x=="textbox2"){
+
+    $('#mic2').css('visibility','hidden');
+  }
+}
+function disable_mic(x)
+{
+   if(x == "English")
+   {
+<!--        $('#mic2').css('display','block');-->
+         $('#mic2').css('visibility','visible');
+         $('#mic1').css('visibility','hidden');
+<!--        $('#mic1').css('display','none');-->
+   }
+   else
+   {
+<!--         $('#mic1').css('display','block');-->
+          $('#mic1').css('visibility','visible');
+         $('#mic2').css('visibility','hidden');
+<!--        $('#mic2').css('display','none');-->
+   }
+}
+
+</script>
+
+</head>
+<body>
+  <nav class="navbar ">
+    <div class="container-fluid" >
+      <div class="navbar-header"  >
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="http://127.0.0.1:5000/" ><img src="../static/logo@2x.png" style="width:25%"></a>
+      </div>
+      <div class="collapse navbar-collapse navbar-right" id="myNavbar">
+        <ul class="nav navbar-nav" id="header">
+          <li class="active"><a href="http://127.0.0.1:5000/">Home</a></li>
+          <li ><a href="https://cleyunited.org/" target="_blank">Cley United</a></li>
+          <li><a href="javascript:view_history()">History</a></li>
+         <li><a href="javascript:view_translation()" name="saved" id="saved">Saved</a></li>
+          <li><a href="#">Community</a></li>
+
+          <li id="sign_in "><a href="{{ url_for('signInGui') }}" ><span class="glyphicon glyphicon-log-in"></span> Sign In</a></li>
+          <li id="sign_out "><a href="javascript:log_out()" ><span class="glyphicon glyphicon-log-out"></span> Sign Out</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+   <h1 align ="center">Esan App Translator</h1>
+   <center> <p><span id="error"></span></p> </center>
+<!--    <form id= "translation_form" action=/translate method=post>-->
+      <form id= "translation_form" method=post>
+      <div class="row">
+        <div class="col-md-5 ">
+          <center>
+            <label for="textbox1">
+              <select id ="dropdown" name="dropdown" onchange="disable_mic(this.value)">
+                <option>Esan</option>
+                <option>English</option>
+              </select>
+            </label>
+          </center>
+            <button type="button" id="mic1" name="mic1" class="btn btn-primary" style="visibility:hidden;" onclick="textToSpeech_eng('textbox1')"><img src="../static/microphone.png"> </button>
+          <textarea class="form-control" name="textbox1" id ="textbox1" rows="7" onfocus="disable_save()"></textarea>
+            <button type="button"  class="btn btn-primary" onclick="setEditAble('textbox1')" > <img src="../static/reset.png"> </button>
+            <button type="button" class="btn btn-primary" onclick="copy('textbox1')" > <img src="../static/copy.png"> </button>
+        </div>
+        <div class="col-md-2" >
+          <center>
+              <button   id="translate" name="translate" class="btn"><img src="../static/enter.png"></button>
+          </br>
+           <button  id="toggle" name="toggle" class="btn"><img src="../static/toggle.png"></button>
+          </center>
+        </div>
+        <div class="col-md-5">
+          <label for="textbox2">
+            <h2>Output</h2>
+          </label>
+             <br/>
+            <button type="button" id="mic2" name="mic2" class="btn btn-primary" style="visibility:hidden;" onclick="textToSpeech_eng('textbox2')"><img src="../static/microphone.png"> </button>
+           <button type="button" class="btn btn-primary pul-right"  id="save" style="visibility:hidden;" > <img src="../static/save.png"> </button>
+          <textarea class="form-control" name="textbox2" id ="textbox2" rows="7" readonly></textarea>
+          <button type="button"  class="btn btn-primary" onclick="setEditAble('textbox2')" > <img src="../static/reset.png"> </button>
+          <button type="button" class="btn btn-primary" onclick="copy('textbox2')" > <img src="../static/copy.png"> </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div>
+    <br/>
+    <center> <p><span id="history"></span></p></center>
+
+
+  </div>
+    <footer class="footer">
+	 Copyright © TecJaunt. All rights reserved.
+	</footer>
+
+</body>
+</html>
