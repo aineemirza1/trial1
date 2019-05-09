@@ -30,7 +30,7 @@ requests==2.21.0
 simplejson==3.16.0
 six==1.12.0
 torch==1.0.1
-torchtext==0.4.0
+git+https://github.com/pytorch/text.git@master#wheel=torchtext
 torchvision==0.2.2.post3
 tqdm==4.30.0
 urllib3==1.24.1
