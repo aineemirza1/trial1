@@ -14,7 +14,7 @@ def gui():
 
 @app.route('/in')
 def ind():
-    return render_template('app.html')
+    return render_template('new.html')
    
 
 
