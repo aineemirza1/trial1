@@ -16,7 +16,7 @@ mysql-connector==2.2.9
 mysqlclient==1.4.2.post1
 numpy==1.16.2
 git+https://github.com/OpenNMT/OpenNMT-py.git
-Pillow==5.4.1
+Pillow==9.3.0
 public==2019.4.13
 PyYAML==5.1
 requests==2.21.0
